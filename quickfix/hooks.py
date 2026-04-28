@@ -5,6 +5,11 @@ app_description = "Service center management system"
 app_email = "bhavathariniya13@gmail.com"
 app_license = "mit"
 
+
+fixtures = ["Device Type"]
+
+
+
 # Apps
 # ------------------
 
