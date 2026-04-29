@@ -7,7 +7,7 @@ on:
   pull_request:
 
 concurrency:
-  group: main-quickfix-${{ github.event.number }}
+  group: develop-quickfix-${{ github.event.number }}
   cancel-in-progress: true
 
 jobs:
