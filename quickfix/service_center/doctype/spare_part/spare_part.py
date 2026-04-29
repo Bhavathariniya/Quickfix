@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe import _
 from frappe.model.document import Document
 from frappe.model.naming import make_autoname
 
@@ -15,4 +16,4 @@ class SparePart(Document):
 
 	def validate(self):
 		if self.selling_price <= self.unit_cost:
-			frappe.throw("Selling price must be greater than unit cost")
+			frappe.throw(_("Selling price must be greater than unit cost"))
