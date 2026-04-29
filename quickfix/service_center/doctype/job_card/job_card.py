@@ -13,14 +13,32 @@ class JobCard(Document):
 		if def_charge:
 			self.labour_charge = def_charge
 
-	@frappe.whitelist()
-	def share_job_card(job_card_name: str, user_email: str) -> dict:
-		if not frappe.db.exists("Job Card", job_card_name):
-			frappe.throw(_("Job Card not found"))
 
-		if not frappe.db.exists("User", user_email):
-			frappe.throw(_("User not found"))
+@frappe.whitelist()
+def share_job_card(job_card_name: str, user_email: str) -> dict:
+	if not frappe.db.exists("Job Card", job_card_name):
+		frappe.throw(_("Job Card not found"))
 
-		frappe.share.add(doctype="Job Card", name=job_card_name, user=user_email, read=1)
+	if not frappe.db.exists("User", user_email):
+		frappe.throw(_("User not found"))
 
-		return {"message": _("Job Card shared successfully")}
+	frappe.share.add(doctype="Job Card", name=job_card_name, user=user_email, read=1)
+
+	return {"message": _("Job Card shared successfully")}
+
+
+def get_permission_query_conditions(user):
+	if not user:
+		frappe.session.user
+
+	roles = frappe.get_roles(user)
+
+	if "QF Manager" in roles or "Administrator" == user:
+		return None
+
+	if "QF Technician" in roles:
+		return f"""`tabJob Card`.assigned_technician IN (SELECT name FROM `tabTechnician` WHERE user = {user})""".format(
+			user=frappe.db.escape(user)
+		)
+
+	return None
