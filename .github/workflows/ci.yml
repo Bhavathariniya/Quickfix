@@ -3,10 +3,8 @@ name: Quickfix CI
 on:
   push:
     branches:
-      - main
+      - develop
   pull_request:
-    branches:
-      - main
 
 concurrency:
   group: main-quickfix-${{ github.event.number }}
