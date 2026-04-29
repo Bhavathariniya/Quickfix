@@ -6,8 +6,7 @@ app_email = "bhavathariniya13@gmail.com"
 app_license = "mit"
 
 
-fixtures = ["Device Type"]
-
+fixtures = ["Device Type", "Role", {"doctype": "Custom DocPerm"}]
 
 
 # Apps
@@ -251,4 +250,3 @@ fixtures = ["Device Type"]
 # ------------
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
-
