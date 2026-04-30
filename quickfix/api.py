@@ -23,3 +23,33 @@ def get_permission_query_conditions(user: str | None):
         """
 
 	return None
+
+
+@frappe.whitelist(allow_guest=True)
+def get_job_cards_Unsafe_fn():
+	return frappe.get_all("Job Card", fields=["*"])
+
+
+@frappe.whitelist()
+def get_job_cards_Safe_fn():
+	user = frappe.session.user
+	roles = frappe.get_roles(user)
+
+	data = frappe.get_list(
+		"Job Card",
+		fields=[
+			"name",
+			"customer_name",
+			"status",
+			"assigned_technicians",
+			"customer_phone",
+			"customer_email",
+		],
+	)
+
+	if "QF Manager" not in roles and user != "Administrator":
+		for d in data:
+			d.pop("customer_phone", None)
+			d.pop("customer_email", None)
+
+	return data

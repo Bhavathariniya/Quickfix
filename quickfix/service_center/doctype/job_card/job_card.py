@@ -37,8 +37,7 @@ def get_permission_query_conditions(user):
 		return None
 
 	if "QF Technician" in roles:
-		return f"""`tabJob Card`.assigned_technician IN (SELECT name FROM `tabTechnician` WHERE user = {user})""".format(
-			user=frappe.db.escape(user)
-		)
+		return f"""`tabJob Card`.assigned_technician IN
+		(SELECT name FROM `tabTechnician` WHERE user = {frappe.db.escape(user)})"""
 
 	return None
