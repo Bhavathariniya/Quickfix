@@ -5,6 +5,14 @@ app_description = "Service center management system"
 app_email = "bhavathariniya13@gmail.com"
 app_license = "mit"
 
+
+fixtures = ["Device Type", "Role", {"doctype": "Custom DocPerm"}]
+
+permission_query_conditions = {
+	"Job Card": "quickfix.service_center.doctype.job_card.job_card.get_permission_query_conditions",
+	"Technician": "quickfix.api.get_permission_query_conditions",
+}
+
 # Apps
 # ------------------
 
@@ -246,4 +254,3 @@ app_license = "mit"
 # ------------
 # List of apps whose translatable strings should be excluded from this app's translations.
 # ignore_translatable_strings_from = []
-
