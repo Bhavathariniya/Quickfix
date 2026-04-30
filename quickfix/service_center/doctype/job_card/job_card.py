@@ -47,11 +47,11 @@ class JobCard(Document):
 			stock_qty = frappe.db.get_value("Spare Parts", i.part, "stock_qty")
 
 			if stock_qty is None:
-				frappe.throw(_(f"Stock not found for part: {0}".format(i.part)))
+				frappe.throw(_("Stock not found for part: {0}").format(i.part))
 
 			if stock_qty < (i.quantity or 0):
 				frappe.throw(
-					_(f"Insufficient stock for part {0}. Available: {1}, Required: {2}").format(
+					_("Insufficient stock for part {0}. Available: {1}, Required: {2}").format(
 						i.part, stock_qty, i.quantity
 					)
 				)

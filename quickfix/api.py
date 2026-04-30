@@ -26,7 +26,13 @@ def get_permission_query_conditions(user: str | None):
 	return None
 
 
-@frappe.whitelist(allow_guest=True)
+# ⚠️ This method is intentionally unsafe for demonstration purposes
+# It uses get_all() which bypasses permission_query_conditions
+# and should NEVER be exposed with allow_guest=True in production
+
+
+# @frappe.whitelist(allow_guest=True)
+@frappe.whitelist()
 def get_job_cards_Unsafe_fn():
 	return frappe.get_all("Job Card", fields=["*"])
 
@@ -57,7 +63,7 @@ def get_job_cards_Safe_fn():
 
 
 @frappe.whitelist()
-def send_job_ready_email(job_card):
+def send_job_ready_email(job_card: str) -> None:
 	doc = frappe.get_doc("Job Card", job_card)
 
 	recipient = doc.customer_email or frappe.db.get_value("User", doc.owner, "email")
