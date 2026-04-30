@@ -1,4 +1,5 @@
 import frappe
+from frappe import _
 
 
 @frappe.whitelist()
@@ -53,3 +54,27 @@ def get_job_cards_Safe_fn():
 			d.pop("customer_email", None)
 
 	return data
+
+
+@frappe.whitelist()
+def send_job_ready_email(job_card):
+	doc = frappe.get_doc("Job Card", job_card)
+
+	recipient = doc.customer_email or frappe.db.get_value("User", doc.owner, "email")
+
+	if not recipient:
+		frappe.log_error("No recipient found for Job Ready Email", "Email Error")
+		return
+
+	subject = _("Your Device is Ready for Delivery")
+
+	message = f"""
+        <p>Hello,</p>
+        <p>Your device for Job Card <b>{doc.name}</b> is ready for delivery.</p>
+        <p>Total Amount: <b>{doc.final_amount}</b></p>
+        <p>Please visit our service center to collect your device.</p>
+        <br>
+        <p>Thank you,<br>QuickFix Team</p>
+    """
+
+	frappe.sendmail(recipients=[recipient], subject=subject, message=message)

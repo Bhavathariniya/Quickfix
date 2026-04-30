@@ -56,6 +56,36 @@ class JobCard(Document):
 					)
 				)
 
+	def on_submit(self):
+		for i in self.parts_used or []:
+			current_stock = frappe.db.get_value("Spare Parts", i.part, "stock_qty") or 0
+
+			# ⚠️ ignore_permissions=True is acceptable here because:
+			# This stock deduction is a SYSTEM-INITIATED operation triggered by document submission,
+			# not a direct user action. The system must ensure consistency of inventory regardless
+			# of the current user's role permissions.
+
+			new_stock = current_stock - (i.quantity or 0)
+			frappe.db.set_value("Spare Parts", i.part, new_stock, update_modified=True)
+
+		invoice = frappe.get_doc(
+			{
+				"doctype": "Service Invoice",
+				"job_card": self.name,
+				"customer_name": self.customer_name,
+				"total_amount": self.final_amount,
+			}
+		)
+		invoice.insert(ignore_permissions=True)
+
+		frappe.publish_realtime(
+			"job_ready",
+			{"job_card": self.name, "message": "Your device is ready for delivery"},
+			user=self.owner,
+		)
+
+		frappe.enqueue("quickfix.api.send_job_ready_email", job_card=self.name, queue="short")
+
 
 @frappe.whitelist()
 def share_job_card(job_card_name: str, user_email: str) -> dict:
