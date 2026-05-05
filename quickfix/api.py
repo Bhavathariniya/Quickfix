@@ -1,5 +1,7 @@
 import frappe
 from frappe import _
+from frappe.client import get_count
+from frappe.utils import now
 
 
 @frappe.whitelist()
@@ -7,6 +9,13 @@ def manager_only_action():
 	frappe.only_for("QF Manager")
 
 	return {"you're allowed to use this method"}
+
+
+# def log_change(doc, method):
+# 	try:
+# 		frappe.get_doc({
+# 			"doctype": "Audit Log"
+# 		})
 
 
 def get_permission_query_conditions(user: str | None):
@@ -84,3 +93,38 @@ def send_job_ready_email(job_card: str) -> None:
     """
 
 	frappe.sendmail(recipients=[recipient], subject=subject, message=message)
+
+
+@frappe.whitelist()
+def rename_technician(old_name: str, new_name: str) -> str:
+	# ⚠️ merge=True is dangerous because it combines two documents into one.
+	# If the records are not true duplicates, it can overwrite data,
+	# corrupt relationships, and cause incorrect linkage in other documents.
+	# It should only be used when both records represent the same entity.
+
+	frappe.rename_doc("Technician", old_name, new_name, merge=False)
+
+	return f"Technician renamed from {old_name} to {new_name}"
+
+
+def validate_job_card(doc, method):
+	if not doc.customer_phone:
+		frappe.throw("Phone required (doc_events)")
+
+	print("docevent validate")
+
+
+@frappe.whitelist()
+def custom_get_count(doctype, filters=None, debug=False, cache=False):
+	print("OVERRIDE HIT##############################")
+
+	frappe.get_doc(
+		{
+			"doctype": "Audit Log",
+			"doctype_name": doctype,
+			"action": "count_queried",
+			"user": frappe.session.user,
+		}
+	).insert(ignore_permissions=True)
+
+	return get_count(doctype, filters, debug, cache)

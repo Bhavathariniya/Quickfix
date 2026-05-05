@@ -63,6 +63,49 @@ What is the issues in using frappe.get_all in a whitelisted method that is expos
  
 ----> get_all() fetches all the records without applying the permissions so that even the low-privilege or guest user can retrive the records. So the permission_query_conditions used to check the user perm when we call the get_list() fn it automatically calls it .
 
+------------------------------------------------------------
+E1
+------------------------------------------------------------
+Recursion Pitfall in on_update() ----> using save() fn in on_update() will create a loop as that save fn invoke the on_update() fn so it will lead to crash or max recursion exceeded err. Alternatively frappe.db.set() can be used in such cases.
+
+------------------------------------------------------------
+E3
+------------------------------------------------------------
+part 1 : 
+MRO ---> MRO defines the order of method execution during the python inheritance (class hierarchy)
+super().validate() is non negotiable cause it is used to call the original validation funtion which is defined in the super class(parent class)
+override_doctype_class is preferred when we need to change the core logic fn and override the existing methods deoc_events is preferred to add addtional functionalities without modification.
+
+part 2 :
+doc_events is safer because it wont replaces the core logic (Original class) like the override doctype class does.
+
+------------------------------------------------------------
+F1
+------------------------------------------------------------
+Task - B
+1.TWO validate handlers on Job Card - one in your main controller and one in
+doc_events . in what order do they run? What happens if
+both raise a frappe.ValidationError?
+
+----> The main controller handler will run first and then the doc_events handler execute. if both raise a error , the execution will stop at first when the main handler raised the err so the second one wont execute.
+
+2.what happens when you register "*" AND a specific DocType handler
+for the same event? Do both run?
+----> yes, Both will run but the specifi doc handler will execute first.
+
+------------------------------------------------------------
+F3
+------------------------------------------------------------
+Assest hooks 
+1.what DocType would use a tree view and why,explain what bench build --app quickfix does and why assets need cache-busting after JS changes
+
+---->Tree view is used for hierarchial data (parent , child relationships) ,
+cache busting is needed because browser caches the old data so that to reload the newversion cache busting is used
+
+Jinja hooks
+1.what is the difference between a Jinja context available in Print Formats vs one available in Web Pages? Are they the same? 
+Jinja context available in Print Formats has limited context like doc objects only. In webpages full context -> user , frappe, session , custom methods So both are not same.
+
 
 ### Contributing
 

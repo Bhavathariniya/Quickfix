@@ -15,7 +15,11 @@ class JobCard(Document):
 			self.labour_charge = def_charge
 
 	def validate(self):
-		if not validate_phone_number(self.customer_phone):
+		print("Controller Validate")
+
+		# if not validate_phone_number(self.customer_phone):
+		if not (self.customer_phone.isdigit() and len(self.customer_phone) == 10):
+			print("phone no validate")
 			frappe.throw(_("Invaild Mobile Number"))
 
 		if self.status in ["In Repair", "Ready for Delivery", "Delivered", "Cancelled"]:
@@ -85,6 +89,31 @@ class JobCard(Document):
 		)
 
 		frappe.enqueue("quickfix.api.send_job_ready_email", job_card=self.name, queue="short")
+
+	def on_cancel(self):
+		self.status = "Cancelled"
+
+		for row in self.parts_used or []:
+			curr_stock = frappe.db.get_value("Spare Part", row.part, "stock_qty") or 0
+
+			restored_stock = curr_stock + (row.quantity or 0)
+
+			frappe.db.set_value("Spare Part", row.part, "stock_qty", restored_stock, update_modified=True)
+
+		invoice_name = frappe.db.get_value("Service Invoice", {"job_card": self.name}, "name")
+
+		if invoice_name:
+			invoice_doc = frappe.get_doc("Service Invoice", invoice_name)
+
+			if invoice_doc.docstatus == 1:
+				invoice_doc.cancel()
+
+	def on_trash(self):
+		if self.status not in ["Draft", "Cancelled"]:
+			frappe.throw(_("Cannot delete Job Card unless status is Draft or Cancelled"))
+
+	# def on_update(self):
+	# 	self.status = "Updated"
 
 
 @frappe.whitelist()
