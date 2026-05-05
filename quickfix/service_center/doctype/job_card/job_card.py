@@ -15,7 +15,7 @@ class JobCard(Document):
 			self.labour_charge = def_charge
 
 	def validate(self):
-		print("Controller Validate")
+		frappe.logger().info("Controller Validate")
 
 		# if not validate_phone_number(self.customer_phone):
 		if not (self.customer_phone.isdigit() and len(self.customer_phone) == 10):
@@ -92,6 +92,8 @@ class JobCard(Document):
 
 	def on_cancel(self):
 		self.status = "Cancelled"
+
+		frappe.db.set_value(self.doctype, self.name, "status", "Cancelled", update_modified=True)
 
 		for row in self.parts_used or []:
 			curr_stock = frappe.db.get_value("Spare Part", row.part, "stock_qty") or 0

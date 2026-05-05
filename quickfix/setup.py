@@ -1,4 +1,5 @@
 import frappe
+from frappe import _
 
 
 def after_install():
@@ -18,11 +19,11 @@ def after_install():
 			}
 		).insert(ignore_permissions=True)
 
-	frappe.msgprint("QuickFix setup completed successfully")
+	frappe.msgprint(_("QuickFix setup completed successfully"))
 
 
 def before_uninstall():
 	exists = frappe.db.exists("job Card", {"docstatus": 1})
 
 	if exists:
-		frappe.throw("Cannot uninstall: Submitted Job Cards exist", frappe.ValidationError)
+		frappe.throw(_("Cannot uninstall: Submitted Job Cards exist", frappe.ValidationError))

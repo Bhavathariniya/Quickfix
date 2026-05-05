@@ -109,14 +109,16 @@ def rename_technician(old_name: str, new_name: str) -> str:
 
 def validate_job_card(doc, method):
 	if not doc.customer_phone:
-		frappe.throw("Phone required (doc_events)")
+		frappe.throw(_("Phone required (doc_events)"))
 
 	print("docevent validate")
 
 
 @frappe.whitelist()
-def custom_get_count(doctype, filters=None, debug=False, cache=False):
-	print("OVERRIDE HIT##############################")
+def custom_get_count(
+	doctype: str, filters: dict | list | None = None, debug: bool = False, cache: bool = False
+) -> int:
+	frappe.logger().info("OVERRIDE HIT")
 
 	frappe.get_doc(
 		{
