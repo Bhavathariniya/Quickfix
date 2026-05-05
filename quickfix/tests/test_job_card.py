@@ -16,8 +16,8 @@ class TestJobCard(unittest.TestCase):
 			}
 		)
 
-		# with self.assertRaises(frappe.ValidationError):
-		doc.insert()
+		with self.assertRaises(frappe.ValidationError):
+			doc.insert()
 
 
 # import frappe
