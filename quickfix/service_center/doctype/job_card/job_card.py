@@ -19,7 +19,7 @@ class JobCard(Document):
 
 		# if not validate_phone_number(self.customer_phone):
 		if not (self.customer_phone.isdigit() and len(self.customer_phone) == 10):
-			print("phone no validate")
+			frappe.logger().info("phone no validate")
 			frappe.throw(_("Invaild Mobile Number"))
 
 		if self.status in ["In Repair", "Ready for Delivery", "Delivered", "Cancelled"]:
@@ -92,9 +92,7 @@ class JobCard(Document):
 
 	def on_cancel(self):
 		self.status = "Cancelled"
-
-		frappe.db.set_value(self.doctype, self.name, "status", "Cancelled", update_modified=True)
-
+		self.db_set("status", "Cancelled")
 		for row in self.parts_used or []:
 			curr_stock = frappe.db.get_value("Spare Part", row.part, "stock_qty") or 0
 
