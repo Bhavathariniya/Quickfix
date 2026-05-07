@@ -18,7 +18,7 @@ A2
  ----> site_config contain site specific configurations like db credentials , dev mode and site level secrects on the other hand the common_site_config file contains db_host , redis config etc 
  if the secrets are accidentally put a secret in common_site_config.json then all the sites in the bench can access the secret so security break.
 
-2. List the 4 processes bench start launches and explain what happens to background jobs if the worker process crashes ?
+2.List the 4 processes bench start launches and explain what happens to background jobs if the worker process crashes ?
  ----> web, worker, scheduler, socketio and if the worker process crashes , the rq jobs wont execute , it will just queued.
 
 ------------------------------------------------------------
@@ -105,6 +105,42 @@ cache busting is needed because browser caches the old data so that to reload th
 Jinja hooks
 1.what is the difference between a Jinja context available in Print Formats vs one available in Web Pages? Are they the same? 
 Jinja context available in Print Formats has limited context like doc objects only. In webpages full context -> user , frappe, session , custom methods So both are not same.
+
+------------------------------------------------------------
+F4
+------------------------------------------------------------
+
+1.explain the difference between override_whitelisted_methods (hook-based reversible, explicit) vs monkey patching (import-time, brittle, invisible). When would you use each?
+
+----> override whitelisted method is safe and hook based , whereas monkey patching is an unsafe runtime modification hard to debug and maintain.
+override whitelisted method is used during api call , auditing or logging and monkey patching when no hooks availabe
+
+2.What happens if TWO apps both register override_whitelisted_methods for the same method? Write the answer
+
+---->if TWO apps both register override_whitelisted_methods for the same method then the last installed app verride_whitelisted_methods will be executed.
+
+3.Explain about the Signature mismatch and not having exactly the same arguments as the original and in what case would you get a TypeError.
+
+----> When overriding the frappe method the custom method should have the same args as the original method otherwise typeError will occcur.
+
+------------------------------------------------------------
+F5
+------------------------------------------------------------
+1.Explain fieldname collision risk: what happens if your Custom Field has the same fieldname as a field added by a future Frappe update?
+
+----> Collision will occur , migration failure ,field override conflict will occur .
+
+2.Explain patching order: if Patch 1 creates a Custom Field and Patch 2 reads it, why must they be separate entries in patches.txt and never merged?
+
+----> if we gives the patches in the same file the order of execution we will never know , so that we give it in seperate files as that frappe will run the files in sequencial order.
+
+------------------------------------------------------------
+H1
+------------------------------------------------------------
+1.Making a frappe.call inside the validate client event (before_save handler) - explain why this does not work ?
+----> frappe.call is async function and validate will not wait for it to complete so inconsistent validation and unreliable logic these things will occur.
+
+2.Using onload or refresh for async data fetches  ----> implementing frappe.call is in onload and referesh is best practice cause these are ui oriented event can safly wait.
 
 
 ### Contributing

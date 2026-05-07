@@ -64,7 +64,7 @@ class JobCard(Document):
 		for i in self.parts_used or []:
 			current_stock = frappe.db.get_value("Spare Parts", i.part, "stock_qty") or 0
 
-			# ⚠️ ignore_permissions=True is acceptable here because:
+			# ignore_permissions=True is acceptable here because:
 			# This stock deduction is a SYSTEM-INITIATED operation triggered by document submission,
 			# not a direct user action. The system must ensure consistency of inventory regardless
 			# of the current user's role permissions.

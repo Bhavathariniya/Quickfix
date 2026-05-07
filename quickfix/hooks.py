@@ -6,7 +6,16 @@ app_email = "bhavathariniya13@gmail.com"
 app_license = "mit"
 
 
-fixtures = ["Device Type", "Role", {"doctype": "Custom DocPerm"}]
+fixtures = [
+	"Device Type",
+	"Role",
+	{"doctype": "Custom DocPerm"},
+	{"dt": "Custom Field"},
+	{"dt": "Property Setter"},
+	{"dt": "Role"},
+	{"dt": "Workspace"},
+	{"dt": "QuickFix Settings"},
+]
 
 permission_query_conditions = {
 	"Job Card": "quickfix.service_center.doctype.job_card.job_card.get_permission_query_conditions",
@@ -26,7 +35,7 @@ doc_events = {
 }
 
 
-after_install = "quickfix.setup.after_install"
+after_install = "quickfix.setup.run_after_install"
 before_uninstall = "quickfix.setup.before_uninstall"
 
 extend_bootinfo = "quickfix.boot.extend_bootinfo"

@@ -1,8 +1,17 @@
 import frappe
 from frappe import _
 
+from quickfix.monkey_patches import apply_all
+
+
+def run_after_install():
+	after_install()
+	apply_all()
+
 
 def after_install():
+	frappe.make_property_setter("Job Card", "remarks", "bold", 1, "Check")
+
 	device_types = ["Mobile", "Laptop", "Tablet"]
 
 	for dt in device_types:

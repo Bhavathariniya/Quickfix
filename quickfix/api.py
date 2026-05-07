@@ -35,7 +35,7 @@ def get_permission_query_conditions(user: str | None):
 	return None
 
 
-# ⚠️ This method is intentionally unsafe for demonstration purposes
+# This method is intentionally unsafe for demonstration purposes
 # It uses get_all() which bypasses permission_query_conditions
 # and should NEVER be exposed with allow_guest=True in production
 
@@ -97,7 +97,7 @@ def send_job_ready_email(job_card: str) -> None:
 
 @frappe.whitelist()
 def rename_technician(old_name: str, new_name: str) -> str:
-	# ⚠️ merge=True is dangerous because it combines two documents into one.
+	# merge=True is dangerous because it combines two documents into one.
 	# If the records are not true duplicates, it can overwrite data,
 	# corrupt relationships, and cause incorrect linkage in other documents.
 	# It should only be used when both records represent the same entity.

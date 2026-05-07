@@ -11,7 +11,7 @@ class AuditLog(Document):
 
 
 def log_change(doc, method):
-	# ⚠️ Prevent infinite loop
+	# Prevent infinite loop
 	if doc.doctype == "Audit Log":
 		return
 
