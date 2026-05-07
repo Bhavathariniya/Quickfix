@@ -130,3 +130,58 @@ def custom_get_count(
 	).insert(ignore_permissions=True)
 
 	return get_count(doctype, filters, debug, cache)
+
+
+@frappe.whitelist()
+def mark_delivered(job_card):
+	doc = frappe.get_doc("Job Card", job_card)
+
+	if doc.status != "Ready for Delivery":
+		frappe.throw(_("Only Ready for Delivery jobs can be delivered"))
+
+	doc.db_set("status", "Delivered")
+
+	doc.save()
+
+	return "Success"
+
+
+@frappe.whitelist()
+def reject_job(job_card, reason):
+	doc = frappe.get_doc("Job Card", job_card)
+
+	if doc.docstatus == 1:
+		frappe.throw(_("Submitted Job Cards cannot be rejected"))
+
+	doc.db_set("status", "Cancelled")
+
+	doc.add_comment("Comment", f"Rejected Reason: {reason}")
+
+	doc.save()
+
+	return "Success"
+
+
+@frappe.whitelist()
+def complete_repair(job_card):
+	doc = frappe.get_doc("Job Card", job_card)
+
+	if doc.status != "In Repair":
+		frappe.throw(_("Only In Repair jobs can be completed"))
+
+	doc.db_set("status", "Ready for Delivery")
+
+	doc.save()
+
+	return "Success"
+
+
+@frappe.whitelist()
+def transfer_technician(job_card, technician):
+	doc = frappe.get_doc("Job Card", job_card)
+
+	doc.assigned_technician = technician
+
+	doc.save()
+
+	return "Success"

@@ -30,6 +30,78 @@ frappe.ui.form.on("Job Card", {
 	},
 
 	refresh(frm) {
+		frm.add_custom_button("Transfer Technician", () => {
+			frappe.prompt(
+				[
+					{
+						label: "New Technician",
+						fieldname: "technician",
+						fieldtype: "Link",
+						options: "Technician",
+						reqd: 1,
+					},
+				],
+
+				(values) => {
+					frappe.confirm(`Transfer to ${values.technician}?`, () => {
+						frappe.call({
+							method: "quickfix.api.transfer_technician",
+							args: {
+								job_card: frm.doc.name,
+								technician: values.technician,
+							},
+							callback() {
+								frm.set_value("assigned_technician", values.technician);
+
+								frm.trigger("assigned_technician");
+
+								frappe.msgprint("Technician Transfered");
+							},
+						});
+					});
+				},
+
+				"Transfer Technician",
+				"Transfer"
+			);
+		});
+
+		frm.add_custom_button("Reject Job", () => {
+			let d = new frappe.ui.Dialog({
+				title: "Reject Job",
+
+				fields: [
+					{
+						label: "Rejection Reason",
+						fieldname: "reason",
+						fieldtype: "Small Text",
+						reqd: 1,
+					},
+				],
+
+				primary_action_label: "Reject",
+
+				primary_action(values) {
+					frappe.call({
+						method: "quickfix.api.reject_job",
+						args: {
+							job_card: frm.doc.name,
+							reason: values.reason,
+						},
+
+						callback() {
+							frappe.msgprint("Job Rejected");
+							frm.reload_doc();
+						},
+					});
+
+					d.hide();
+				},
+			});
+
+			d.show();
+		});
+
 		if (frm.doc.status === "Pending Diagnosis") {
 			frm.dashboard.add_indicator("Pending Diagnosis", "orange");
 		} else if (frm.doc.status === "In Repair") {
@@ -38,7 +110,7 @@ frappe.ui.form.on("Job Card", {
 			frm.dashboard.add_indicator("Ready for Delivery", "green");
 		}
 
-		if (frm.frm.doc.status === "ready for Delivery" && frm.doc.docstatus === 1) {
+		if (frm.doc.status === "Ready for Delivery" && frm.doc.docstatus === 1) {
 			frm.add_custom_button("Mark as Delivered", () => {
 				frappe.call({
 					method: "quickfix.api.mark_delivered",
@@ -52,7 +124,7 @@ frappe.ui.form.on("Job Card", {
 			});
 		}
 
-		if (frm.boot.quickfix_shop_name) {
+		if (frappe.boot.quickfix_shop_name) {
 			frm.page.set_indicator(frappe.boot.quickfix_shop_name, "blue");
 		}
 	},
@@ -73,9 +145,9 @@ frappe.ui.form.on("Job Card", {
 					return;
 				}
 
-				let specialization = r.message;
+				let specialization = r.message.specialization;
 
-				if (specialization && specialization !== frm.doc.device_type) {
+				if (specialization && specialization != frm.doc.device_type) {
 					frappe.msgprint("Technician specialization does not match device type");
 				}
 			},
