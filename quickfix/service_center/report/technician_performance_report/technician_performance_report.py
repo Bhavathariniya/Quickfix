@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe import _
 from frappe.utils import date_diff
 
 
@@ -26,11 +27,16 @@ def get_columns(filters):
 			"options": "Technician",
 			"width": 180,
 		},
-		{"label": "Total Jobs", "fieldname": "total_jobs", "fieldtype": "Int", "width": 120},
-		{"label": "Completed", "fieldname": "completed", "fieldtype": "Int", "width": 120},
-		{"label": "Avg Turnaround Days", "fieldname": "avg_days", "fieldtype": "Float", "width": 160},
-		{"label": "Revenue", "fieldname": "revenue", "fieldtype": "Currency", "width": 140},
-		{"label": "Completion Rate %", "fieldname": "completion_rate", "fieldtype": "Percent", "width": 150},
+		{"label": _("Total Jobs"), "fieldname": "total_jobs", "fieldtype": "Int", "width": 120},
+		{"label": _("Completed"), "fieldname": "completed", "fieldtype": "Int", "width": 120},
+		{"label": _("Avg Turnaround Days"), "fieldname": "avg_days", "fieldtype": "Float", "width": 160},
+		{"label": _("Revenue"), "fieldname": "revenue", "fieldtype": "Currency", "width": 140},
+		{
+			"label": _("Completion Rate %"),
+			"fieldname": "completion_rate",
+			"fieldtype": "Percent",
+			"width": 150,
+		},
 	]
 
 	for dt in frappe.get_all("Device Type", fields=["name"]):

@@ -88,13 +88,13 @@ frappe.ui.form.on("Job Card", {
 			);
 		});
 
-		frm.add_custom_button("Reject Job", () => {
+		frm.add_custom_button(__("Reject Job"), () => {
 			let d = new frappe.ui.Dialog({
 				title: "Reject Job",
 
 				fields: [
 					{
-						label: "Rejection Reason",
+						label: __("Rejection Reason"),
 						fieldname: "reason",
 						fieldtype: "Small Text",
 						reqd: 1,
@@ -112,7 +112,7 @@ frappe.ui.form.on("Job Card", {
 						},
 
 						callback() {
-							frappe.msgprint("Job Rejected");
+							frappe.msgprint(__("Job Rejected"));
 							frm.reload_doc();
 						},
 					});

@@ -140,7 +140,7 @@ def custom_get_count(
 
 
 @frappe.whitelist()
-def mark_delivered(job_card):
+def mark_delivered(job_card: str):
 	doc = frappe.get_doc("Job Card", job_card)
 
 	if doc.status != "Ready for Delivery":
@@ -154,7 +154,7 @@ def mark_delivered(job_card):
 
 
 @frappe.whitelist()
-def reject_job(job_card, reason):
+def reject_job(job_card: str, reason: str):
 	doc = frappe.get_doc("Job Card", job_card)
 
 	if doc.docstatus == 1:
@@ -170,7 +170,7 @@ def reject_job(job_card, reason):
 
 
 @frappe.whitelist()
-def complete_repair(job_card):
+def complete_repair(job_card: str):
 	doc = frappe.get_doc("Job Card", job_card)
 
 	if doc.status != "In Repair":
@@ -184,7 +184,7 @@ def complete_repair(job_card):
 
 
 @frappe.whitelist()
-def transfer_technician(job_card, technician):
+def transfer_technician(job_card: str, technician: str):
 	doc = frappe.get_doc("Job Card", job_card)
 
 	doc.assigned_technician = technician
@@ -337,12 +337,12 @@ def generate_monthly_revenue_report(year):
 
 
 @frappe.whitelist()
-def trigger_ready_email(job_card):
+def trigger_ready_email(job_card: str):
 	frappe.enqueue("quickfix.api.send_job_ready_email", queue="short", job_card=job_card)
 
 
 @frappe.whitelist()
-def trigger_revenue_report(year):
+def trigger_revenue_report(year: int):
 	frappe.enqueue("quickfix.api.generate_monthly_revenue_report", queue="long", timeout=600, year=year)
 
 
@@ -362,14 +362,14 @@ def monthly_report_scheduler():
 def trigger_failed_job():
 	frappe.enqueue("quickfix.api.failing_background_job", queue="default")
 
-	frappe.msgprint("Failing job queued")
+	frappe.msgprint(_("Failing job queued"))
 
 
-def cancel_old_draft_jobs():
-	frappe.db.sql("""UPDATE `tabJob Card` SET status = 'cancelled'
-				  WHERE docstatus = 0 AND creation < DATE_SUB(NOW(),INTERVAL 30 DAY) """)
+# def cancel_old_draft_jobs():
+# 	frappe.db.sql("""UPDATE `tabJob Card` SET status = 'cancelled'
+# 				  WHERE docstatus = 0 AND creation < DATE_SUB(NOW(),INTERVAL 30 DAY) """)
 
-	frappe.db.commit()
+# 	frappe.db.commit()
 
 
 def bulk_insert_logs():
