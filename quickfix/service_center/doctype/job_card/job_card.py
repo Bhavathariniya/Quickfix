@@ -8,6 +8,9 @@ from frappe.utils import validate_phone_number
 
 
 class JobCard(Document):
+	def before_print(self, settings=None):
+		self.print_summary = f"{self.customer_name} - " f"{self.device_brand} " f"{self.device_model}"
+
 	def before_insert(self):
 		def_charge = frappe.db.get_single_value("QuickFix Settings", "default_labour_charge")
 
@@ -61,6 +64,8 @@ class JobCard(Document):
 				)
 
 	def on_submit(self):
+		frappe.enqueue("quickfix.api.send_webhook", queue="short", job_card_name=self.name, retry_count=0)
+
 		for i in self.parts_used or []:
 			current_stock = frappe.db.get_value("Spare Parts", i.part, "stock_qty") or 0
 

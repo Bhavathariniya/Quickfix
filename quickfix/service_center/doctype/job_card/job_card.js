@@ -30,6 +30,28 @@ frappe.ui.form.on("Job Card", {
 	},
 
 	refresh(frm) {
+		if (!frappe.user.has_role("QF Manager")) {
+			frm.set_df_property("customer_phone", "hidden", 1);
+		}
+
+		frm.add_custom_button(
+			"Generate Revenue Report",
+
+			() => {
+				frappe.call({
+					method: "quickfix.api.trigger_revenue_report",
+
+					args: {
+						year: 2026,
+					},
+
+					callback() {
+						frappe.msgprint("Report generation started");
+					},
+				});
+			}
+		);
+
 		frm.add_custom_button("Transfer Technician", () => {
 			frappe.prompt(
 				[

@@ -53,7 +53,10 @@ doctype_js = {"Job Card": "public/js/job_card.js"}
 
 doctype_list_js = {"Job Card": "public/js/job_card_list.js"}
 
-jinja = {"methods": ["quickfix.jinja.get_shop_name"], "filters": ["quickfix.jinja.format_job_id"]}
+jinja = {
+	"methods": ["quickfix.jinja.get_shop_name", "quickfix.jinja.get_qr_code"],
+	"filters": ["quickfix.jinja.format_job_id"],
+}
 
 
 website_route_rules = [{"from_route": "/track_job", "to_route": "track_job"}]
@@ -63,6 +66,10 @@ portal_menu_items = [{"title": "Track My Job", "route": "/track_job", "role": "G
 
 override_whitelisted_methods = {"frappe.client.get_count": "quickfix.api.custom_get_count"}
 
+scheduler_events = {
+	"daily": ["quickfix.api.check_low_stock"],
+	"cron": {"0 2 1 * *": ["quickfix.api.monthly_report_scheduler"]},
+}
 
 # Apps
 # ------------------

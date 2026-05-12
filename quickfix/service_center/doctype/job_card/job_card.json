@@ -116,6 +116,7 @@
   {
    "fieldname": "assigned_technician",
    "fieldtype": "Link",
+   "search_index": 1,
    "label": "Assigned Technician",
    "options": "Technician"
   },
@@ -190,6 +191,7 @@
   {
    "fieldname": "status",
    "fieldtype": "Select",
+   "search_index": 1,
    "in_list_view": 1,
    "label": "Status",
    "options": "Draft\nPending Diagnosis\nAwaiting Customer Approval\nIn Repair\nReady for Delivery\nDelivered\nCancelled"

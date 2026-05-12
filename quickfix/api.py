@@ -1,7 +1,12 @@
+import hashlib
+import json
+import time
+
 import frappe
+import requests
 from frappe import _
 from frappe.client import get_count
-from frappe.utils import now
+from frappe.utils import now, now_datetime, today
 
 
 @frappe.whitelist()
@@ -73,6 +78,8 @@ def get_job_cards_Safe_fn():
 
 @frappe.whitelist()
 def send_job_ready_email(job_card: str) -> None:
+	frappe.logger().info(f"Sending email for {job_card}")
+
 	doc = frappe.get_doc("Job Card", job_card)
 
 	recipient = doc.customer_email or frappe.db.get_value("User", doc.owner, "email")
@@ -185,3 +192,242 @@ def transfer_technician(job_card, technician):
 	doc.save()
 
 	return "Success"
+
+
+@frappe.whitelist()
+def get_status_chart_data():
+	data = frappe.db.sql(
+		"""
+
+        SELECT
+            status,
+            COUNT(*) as count
+
+        FROM `tabJob Card`
+
+        GROUP BY status
+
+    """,
+		as_dict=True,
+	)
+
+	return {
+		"labels": [d.status for d in data],
+		"datasets": [{"name": "Jobs", "values": [d.count for d in data]}],
+	}
+
+
+# def check_low_stock():
+
+#     last_run = frappe.db.exists(
+
+#         "Audit Log",
+
+#         {
+
+#             "action": "low_stock_check",
+
+#             "creation": ["like", f"{today()}%"]
+
+#         }
+
+#     )
+
+#     if last_run:
+
+#         return
+
+
+#     frappe.get_doc({
+
+#         "doctype": "Audit Log",
+
+#         "action": "low_stock_check"
+
+#     }).insert(ignore_permissions=True)
+
+
+#     low_stock_parts = frappe.get_all(
+
+#         "Spare Part",
+
+#         filters={
+
+#             "stock_qty": ["<=", "reorder_level"]
+
+#     },
+
+#     fields=[
+
+#         "name",
+#         "stock_qty",
+#         "reorder_level"
+
+#     ]
+
+# )
+
+# frappe.logger().info(
+
+#     f"Low stock parts: {low_stock_parts}"
+
+# )
+
+
+def check_low_stock():
+	cache_key = f"low_stock_check_{today()}"
+
+	if frappe.cache().get_value(cache_key):
+		print("Already Ran Today")
+
+		return
+
+	frappe.cache().set_value(cache_key, True)
+
+	print("Running Low Stock Check")
+
+	low_stock_parts = frappe.get_all(
+		"Spare Part",
+		filters={"stock_qty": ["<=", "reorder_level"]},
+		fields=["name", "stock_qty", "reorder_level"],
+	)
+
+	print(low_stock_parts)
+
+
+def generate_monthly_revenue_report(year):
+	months = range(1, 13)
+
+	total_revenue = 0
+
+	for i, month in enumerate(months, 1):
+		revenue = (
+			frappe.db.sql(
+				"""
+
+            SELECT
+                SUM(final_amount)
+
+            FROM `tabJob Card`
+
+            WHERE
+                status = 'Delivered'
+                AND YEAR(modified) = %s
+                AND MONTH(modified) = %s
+
+        """,
+				(year, month),
+			)[0][0]
+			or 0
+		)
+
+		total_revenue += revenue
+
+		frappe.publish_progress(
+			percent=round(i / 12 * 100),
+			title="Generating Revenue Report",
+			description=f"Processing month {month}...",
+		)
+
+		time.sleep(1)
+
+	frappe.logger().info(f"Revenue Report Generated " f"for {year} : {total_revenue}")
+	print(f"Revenue Report Generated for {year}")
+	return total_revenue
+
+
+@frappe.whitelist()
+def trigger_ready_email(job_card):
+	frappe.enqueue("quickfix.api.send_job_ready_email", queue="short", job_card=job_card)
+
+
+@frappe.whitelist()
+def trigger_revenue_report(year):
+	frappe.enqueue("quickfix.api.generate_monthly_revenue_report", queue="long", timeout=600, year=year)
+
+
+def failing_background_job():
+	frappe.logger().info("Failing job started")
+
+	raise Exception("Intentional Background Job Failure")
+
+
+def monthly_report_scheduler():
+	year = now_datetime().year
+
+	frappe.enqueue("quickfix.api.generate_monthly_revenue_report", queue="long", timeout=600, year=year)
+
+
+@frappe.whitelist()
+def trigger_failed_job():
+	frappe.enqueue("quickfix.api.failing_background_job", queue="default")
+
+	frappe.msgprint("Failing job queued")
+
+
+def cancel_old_draft_jobs():
+	frappe.db.sql("""UPDATE `tabJob Card` SET status = 'cancelled'
+				  WHERE docstatus = 0 AND creation < DATE_SUB(NOW(),INTERVAL 30 DAY) """)
+
+	frappe.db.commit()
+
+
+def bulk_insert_logs():
+	rows = []
+
+	for _i in range(500):
+		rows.append((frappe.generate_hash(), frappe.session.user, "Bulk Insert Test"))
+
+	frappe.db.bulk_insert("Audit Log", fields=["name", "owner", "action"], values=rows)
+
+	print("bulk insert running")
+
+
+def send_webhook(job_card_name, retry_count=0):
+	settings = frappe.get_single("QuickFix Settings")
+
+	if not settings.webhook_url:
+		return
+
+	doc = frappe.get_doc("Job Card", job_card_name)
+
+	webhook_id = hashlib.sha256(f"{doc.name}-job_submitted".encode()).hexdigest()
+
+	existing = frappe.db.exists("Audit Log", {"method": webhook_id})
+
+	if existing:
+		return
+
+	payload = {
+		"event": "job_submitted",
+		"job_card": doc.name,
+		"customer": doc.customer_name,
+		"amount": doc.final_amount,
+	}
+
+	try:
+		r = requests.post(settings.webhook_url, json=payload, timeout=5)
+
+		r.raise_for_status()
+
+		frappe.get_doc(
+			{
+				"doctype": "Audit Log",
+				"method": webhook_id,
+				"reference_doctype": "Job Card",
+				"document_name": doc.name,
+			}
+		).insert(ignore_permissions=True)
+
+	except Exception as e:
+		frappe.log_error(f"Webhook failed: {e}", "Webhook Error")
+
+		if retry_count < 3:
+			frappe.enqueue(
+				"quickfix.api.send_webhook",
+				queue="short",
+				enqueue_after_commit=True,
+				job_card_name=job_card_name,
+				retry_count=retry_count + 1,
+				at_front=False,
+			)

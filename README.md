@@ -142,6 +142,13 @@ H1
 
 2.Using onload or refresh for async data fetches  ----> implementing frappe.call is in onload and referesh is best practice cause these are ui oriented event can safly wait.
 
+------------------------------------------------------------
+K3
+------------------------------------------------------------
+Task - A (N+1 query detection and fix)
+
+----> SELECT jc.name, t.technician_name, t.phone FROM `tabJob Card` jc LEFT JOIN `tabTechnician` t ON jc.assigned_technician = t.name
+
 
 ### Contributing
 
