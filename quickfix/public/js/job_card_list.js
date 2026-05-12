@@ -37,7 +37,7 @@ frappe.listview_settings["Job Card"] = {
 					job_card: doc.name,
 				},
 				callback() {
-					frappe.show_alert("Repair Completed");
+					frappe.show_alert(__("Repair Completed"));
 
 					frappe.listview.refresh();
 				},

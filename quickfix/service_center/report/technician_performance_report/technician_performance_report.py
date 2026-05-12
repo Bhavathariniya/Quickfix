@@ -21,7 +21,7 @@ def execute(filters=None):
 def get_columns(filters):
 	columns = [
 		{
-			"label": "Technician",
+			"label": _("Technician"),
 			"fieldname": "technician",
 			"fieldtype": "Link",
 			"options": "Technician",
@@ -130,7 +130,7 @@ def get_report_summary(data):
 	best_tech = max(data, key=lambda d: d["completed"], default={})
 
 	return [
-		{"label": "Total Jobs", "value": total_jobs, "indicator": "blue"},
-		{"label": "Total Revenue", "value": total_revenue, "indicator": "green"},
-		{"label": "Best Technician", "value": best_tech.get("technician", ""), "indicator": "orange"},
+		{"label": _("Total Jobs"), "value": total_jobs, "indicator": "blue"},
+		{"label": _("Total Revenue"), "value": total_revenue, "indicator": "green"},
+		{"label": _("Best Technician"), "value": best_tech.get("technician", ""), "indicator": "orange"},
 	]

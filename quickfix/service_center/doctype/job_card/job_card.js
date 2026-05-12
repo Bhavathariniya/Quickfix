@@ -35,7 +35,7 @@ frappe.ui.form.on("Job Card", {
 		}
 
 		frm.add_custom_button(
-			"Generate Revenue Report",
+			__("Generate Revenue Report"),
 
 			() => {
 				frappe.call({
@@ -46,17 +46,17 @@ frappe.ui.form.on("Job Card", {
 					},
 
 					callback() {
-						frappe.msgprint("Report generation started");
+						frappe.msgprint(__("Report generation started"));
 					},
 				});
 			}
 		);
 
-		frm.add_custom_button("Transfer Technician", () => {
+		frm.add_custom_button(__("Transfer Technician"), () => {
 			frappe.prompt(
 				[
 					{
-						label: "New Technician",
+						label: __("New Technician"),
 						fieldname: "technician",
 						fieldtype: "Link",
 						options: "Technician",
@@ -90,7 +90,7 @@ frappe.ui.form.on("Job Card", {
 
 		frm.add_custom_button(__("Reject Job"), () => {
 			let d = new frappe.ui.Dialog({
-				title: "Reject Job",
+				title: __("Reject Job"),
 
 				fields: [
 					{
@@ -133,7 +133,7 @@ frappe.ui.form.on("Job Card", {
 		}
 
 		if (frm.doc.status === "Ready for Delivery" && frm.doc.docstatus === 1) {
-			frm.add_custom_button("Mark as Delivered", () => {
+			frm.add_custom_button(__("Mark as Delivered"), () => {
 				frappe.call({
 					method: "quickfix.api.mark_delivered",
 					args: {
@@ -170,7 +170,7 @@ frappe.ui.form.on("Job Card", {
 				let specialization = r.message.specialization;
 
 				if (specialization && specialization != frm.doc.device_type) {
-					frappe.msgprint("Technician specialization does not match device type");
+					frappe.msgprint(__("Technician specialization does not match device type"));
 				}
 			},
 		});

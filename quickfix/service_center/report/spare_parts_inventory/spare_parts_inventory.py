@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe import _
 
 
 def execute(filters=None):
@@ -20,27 +21,27 @@ def execute(filters=None):
 
 def get_columns():
 	return [
-		{"label": "Part Name", "fieldname": "part_name", "fieldtype": "Data", "width": 180},
+		{"label": _("Part Name"), "fieldname": "part_name", "fieldtype": "Data", "width": 180},
 		{
-			"label": "Part Code",
+			"label": _("Part Code"),
 			"fieldname": "name",
 			"fieldtype": "Link",
 			"options": "Spare Part",
 			"width": 140,
 		},
 		{
-			"label": "Device Type",
+			"label": _("Device Type"),
 			"fieldname": "device_type",
 			"fieldtype": "Link",
 			"options": "Device Type",
 			"width": 140,
 		},
-		{"label": "Stock Qty", "fieldname": "stock_qty", "fieldtype": "Float", "width": 120},
-		{"label": "Reorder Level", "fieldname": "reorder_level", "fieldtype": "Float", "width": 130},
-		{"label": "Unit Cost", "fieldname": "unit_cost", "fieldtype": "Currency", "width": 130},
-		{"label": "Selling Price", "fieldname": "selling_price", "fieldtype": "Currency", "width": 130},
-		{"label": "Margin %", "fieldname": "margin", "fieldtype": "Percent", "width": 120},
-		{"label": "Total Value", "fieldname": "total_value", "fieldtype": "Currency", "width": 140},
+		{"label": _("Stock Qty"), "fieldname": "stock_qty", "fieldtype": "Float", "width": 120},
+		{"label": _("Reorder Level"), "fieldname": "reorder_level", "fieldtype": "Float", "width": 130},
+		{"label": _("Unit Cost"), "fieldname": "unit_cost", "fieldtype": "Currency", "width": 130},
+		{"label": _("Selling Price"), "fieldname": "selling_price", "fieldtype": "Currency", "width": 130},
+		{"label": _("Margin %"), "fieldname": "margin", "fieldtype": "Percent", "width": 120},
+		{"label": _("Total Value"), "fieldname": "total_value", "fieldtype": "Currency", "width": 140},
 	]
 
 
@@ -93,7 +94,7 @@ def get_summary(data):
 	total_inventory = sum([d["total_value"] for d in data])
 
 	return [
-		{"label": "Total Parts", "value": total_parts, "indicator": "blue"},
-		{"label": "Below Reorder", "value": below_reorder, "indicator": "red"},
-		{"label": "Total Inventory Value", "value": total_inventory, "indicator": "green"},
+		{"label": _("Total Parts"), "value": total_parts, "indicator": "blue"},
+		{"label": _("Below Reorder"), "value": below_reorder, "indicator": "red"},
+		{"label": _("Total Inventory Value"), "value": total_inventory, "indicator": "green"},
 	]
