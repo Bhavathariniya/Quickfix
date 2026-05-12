@@ -77,7 +77,7 @@ frappe.ui.form.on("Job Card", {
 
 								frm.trigger("assigned_technician");
 
-								frappe.msgprint("Technician Transfered");
+								frappe.msgprint(__("Technician Transfered"));
 							},
 						});
 					});
