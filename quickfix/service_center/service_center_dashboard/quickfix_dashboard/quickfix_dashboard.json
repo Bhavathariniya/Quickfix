@@ -1,0 +1,24 @@
+{
+ "cards": [
+  {
+   "card": "Number Card List"
+  }
+ ],
+ "charts": [
+  {
+   "width": "Half"
+  }
+ ],
+ "creation": "2026-05-11 11:07:38.506910",
+ "dashboard_name": "Quickfix Dashboard",
+ "docstatus": 0,
+ "doctype": "Dashboard",
+ "idx": 0,
+ "is_default": 0,
+ "is_standard": 1,
+ "modified": "2026-05-11 13:05:44.901661",
+ "modified_by": "Administrator",
+ "module": "Service Center",
+ "name": "Quickfix Dashboard",
+ "owner": "Administrator"
+}

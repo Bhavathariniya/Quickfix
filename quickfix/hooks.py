@@ -6,11 +6,69 @@ app_email = "bhavathariniya13@gmail.com"
 app_license = "mit"
 
 
-fixtures = ["Device Type", "Role", {"doctype": "Custom DocPerm"}]
+fixtures = [
+	"Device Type",
+	"Role",
+	{"doctype": "Custom DocPerm"},
+	{"dt": "Custom Field"},
+	{"dt": "Property Setter"},
+	{"dt": "Role"},
+	{"dt": "Workspace"},
+	{"dt": "QuickFix Settings"},
+]
 
 permission_query_conditions = {
 	"Job Card": "quickfix.service_center.doctype.job_card.job_card.get_permission_query_conditions",
 	"Technician": "quickfix.api.get_permission_query_conditions",
+}
+
+override_doctype_class = {"Job Card": "quickfix.service_center.overrides.custom_job_card.CustomJobCard"}
+
+
+doc_events = {
+	"*": {
+		"on_update": "quickfix.service_center.doctype.audit_log.audit_log.log_change",
+		"on_submit": "quickfix.service_center.doctype.audit_log.audit_log.log_change",
+		"on_cancel": "quickfix.service_center.doctype.audit_log.audit_log.log_change",
+	},
+	"Job Card": {"validate": "quickfix.api.validate_job_card"},
+}
+
+
+after_install = "quickfix.setup.run_after_install"
+before_uninstall = "quickfix.setup.before_uninstall"
+
+extend_bootinfo = "quickfix.boot.extend_bootinfo"
+
+on_session_creation = "quickfix.session.on_login"
+
+on_logout = "quickfix.session.on_logout"
+
+
+app_include_js = "/assets/quickfix/js/desk.js"
+
+web_include_js = "assets/quickfix/js/web.js"
+
+doctype_js = {"Job Card": "public/js/job_card.js"}
+
+doctype_list_js = {"Job Card": "public/js/job_card_list.js"}
+
+jinja = {
+	"methods": ["quickfix.jinja.get_shop_name", "quickfix.jinja.get_qr_code"],
+	"filters": ["quickfix.jinja.format_job_id"],
+}
+
+
+website_route_rules = [{"from_route": "/track_job", "to_route": "track_job"}]
+
+portal_menu_items = [{"title": "Track My Job", "route": "/track_job", "role": "Guest"}]
+
+
+override_whitelisted_methods = {"frappe.client.get_count": "quickfix.api.custom_get_count"}
+
+scheduler_events = {
+	"daily": ["quickfix.api.check_low_stock"],
+	"cron": {"0 2 1 * *": ["quickfix.api.monthly_report_scheduler"]},
 }
 
 # Apps

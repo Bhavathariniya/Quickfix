@@ -1,0 +1,76 @@
+
+<h1>track Your Job</h1>
+<form method="GET">
+    <input type="text", name="phone",placeholder= "Enter Phone Number",maxlength= "10" >
+    <button type="submit">Track</button>
+</form>
+
+{% if phone %}
+    <p>Entered Phone Number: {{ phone }}</p>
+{% endif %}
+
+{% if jobs %}
+
+    <h3>Jobs Found</h3>
+
+    <table border="1" cellpadding="10">
+
+        <tr>
+            <th>Job ID</th>
+            <th>Status</th>
+            <th>Device</th>
+        </tr>
+
+        {% for job in jobs %}
+
+        <tr>
+            <td>{{ job.name }}</td>
+            <td>{{ job.status }}</td>
+            <td>{{ job.device_brand }}</td>
+        </tr>
+
+        {% endfor %}
+
+    </table>
+
+{% else %}
+
+    {% if phone %}
+        <p style="color:red;">No Jobs Found</p>
+    {% endif %}
+
+{% endif %}
+
+
+
+
+
+
+
+
+
+
+<!-- using Job Id  -->
+
+<!-- <h1>Track Your Job</h1>
+
+<form method="GET">
+    <input type="text" name="job_id" placeholder="Enter Job Card ID">
+    <button type="submit">Track</button>
+</form>
+
+{% if job_id %}
+    <p>Entered Job ID: {{ job_id }}</p>
+{% endif %}
+
+{% if job %}
+    <h3>Job ID: {{ job_id }}</h3>
+    <p>Status: {{ job.status }}</p>
+    <p>Customer: {{ job.customer_name }}</p>
+{% else %}
+    {% if job_id %}
+        <p style="color:red;">No Job Found</p>
+    {% endif %}
+{% endif %} -->
+
+
