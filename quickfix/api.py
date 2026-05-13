@@ -458,7 +458,8 @@ def send_webhook(job_card_name, retry_count=0):
 			)
 
 
-@frappe.whitelist(allow_guest=True)
+# @frappe.whitelist(allow_guest=True)
+@frappe.whitelist()
 def payment_webhook():
 	payload = frappe.request.data
 
