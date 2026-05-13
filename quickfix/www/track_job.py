@@ -1,6 +1,7 @@
 import re
 
 import frappe
+from frappe import _
 
 
 def get_context(context):
@@ -27,7 +28,7 @@ def get_context(context):
 	count = frappe.cache.get_value(cache_key) or 0
 
 	if int(count) >= 20:
-		frappe.throw("Too many requests. Try again later.")
+		frappe.throw(_("Too many requests. Try again later."))
 
 	frappe.cache.set_value(cache_key, int(count) + 1, expires_in_sec=60)
 

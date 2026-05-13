@@ -469,7 +469,7 @@ def payment_webhook():
 	expected = hmac.new(secret.encode(), payload, hashlib.sha256).hexdigest()
 
 	if not hmac.compare_digest(expected, signature or ""):
-		frappe.throw("Invalid signature", frappe.AuthenticationError)
+		frappe.throw(_("Invalid signature", frappe.AuthenticationError))
 
 	data = json.loads(payload)
 
