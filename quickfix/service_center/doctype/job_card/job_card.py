@@ -8,6 +8,9 @@ from frappe.utils import validate_phone_number
 
 
 class JobCard(Document):
+	def on_update(self):
+		frappe.cache.delete_value("quickfix_status_chart")
+
 	def before_print(self, settings=None):
 		self.print_summary = f"{self.customer_name} - " f"{self.device_brand} " f"{self.device_model}"
 
@@ -64,6 +67,19 @@ class JobCard(Document):
 				)
 
 	def on_submit(self):
+		frappe.sendmail(
+			recipients=[self.customer_email],
+			subject="QuickFix Invoice",
+			message="""
+					Your repair invoice is attached.
+				""",
+			attachments=[
+				frappe.attach_print(
+					self.doctype, self.name, print_format="Job Card Receipt", file_name=self.name
+				)
+			],
+		)
+
 		frappe.enqueue("quickfix.api.send_webhook", queue="short", job_card_name=self.name, retry_count=0)
 
 		for i in self.parts_used or []:

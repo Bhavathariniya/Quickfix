@@ -1,0 +1,31 @@
+{
+ "attach_files": "",
+ "attach_print": 0,
+ "channel": "Email",
+ "condition": "doc.status==\"Ready for Delivery\"",
+ "creation": "2026-05-13 16:58:26.052258",
+ "days_in_advance": 0,
+ "docstatus": 0,
+ "doctype": "Notification",
+ "document_type": "Job Card",
+ "enabled": 1,
+ "event": "Save",
+ "idx": 0,
+ "is_standard": 1,
+ "message": "Hello {{ doc.customer_name }},\n\nYour repair is completed and your device is ready for delivery.\n\nJob Card: {{ doc.name }}\n\nStatus: {{ doc.status }}\n\nThank you,\nQuickFix Service Center",
+ "message_type": "HTML",
+ "modified": "2026-05-13 16:58:26.052258",
+ "modified_by": "Administrator",
+ "module": "Service Center",
+ "name": "Job Ready Email",
+ "owner": "Administrator",
+ "recipients": [
+  {
+   "receiver_by_document_field": "customer_email"
+  }
+ ],
+ "send_system_notification": 0,
+ "send_to_all_assignees": 1,
+ "set_property_after_alert": "",
+ "subject": "Device Ready for Delivery"
+}

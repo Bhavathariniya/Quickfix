@@ -1,4 +1,5 @@
 import hashlib
+import hmac
 import json
 import time
 
@@ -7,6 +8,11 @@ import requests
 from frappe import _
 from frappe.client import get_count
 from frappe.utils import now, now_datetime, today
+
+frappe.utils.logger.set_log_level("INFO")
+
+
+logger = frappe.logger("quickfix", allow_site=True, file_count=5)
 
 
 @frappe.whitelist()
@@ -194,27 +200,27 @@ def transfer_technician(job_card: str, technician: str):
 	return "Success"
 
 
-@frappe.whitelist()
-def get_status_chart_data():
-	data = frappe.db.sql(
-		"""
+# @frappe.whitelist()
+# def get_status_chart_data():
+# 	data = frappe.db.sql(
+# 		"""
 
-        SELECT
-            status,
-            COUNT(*) as count
+#         SELECT
+#             status,
+#             COUNT(*) as count
 
-        FROM `tabJob Card`
+#         FROM `tabJob Card`
 
-        GROUP BY status
+#         GROUP BY status
 
-    """,
-		as_dict=True,
-	)
+#     """,
+# 		as_dict=True,
+# 	)
 
-	return {
-		"labels": [d.status for d in data],
-		"datasets": [{"name": "Jobs", "values": [d.count for d in data]}],
-	}
+# 	return {
+# 		"labels": [d.status for d in data],
+# 		"datasets": [{"name": "Jobs", "values": [d.count for d in data]}],
+# 	}
 
 
 # def check_low_stock():
@@ -384,9 +390,13 @@ def bulk_insert_logs():
 
 
 def send_webhook(job_card_name, retry_count=0):
+	logger.info(f"Webhook started for {job_card_name}")
+	logger.warning("Webhook called")
 	settings = frappe.get_single("QuickFix Settings")
 
 	if not settings.webhook_url:
+		logger.warning("Webhook not configured")
+
 		return
 
 	doc = frappe.get_doc("Job Card", job_card_name)
@@ -400,15 +410,30 @@ def send_webhook(job_card_name, retry_count=0):
 
 	payload = {
 		"event": "job_submitted",
-		"job_card": doc.name,
+		"ref": doc.name,
 		"customer": doc.customer_name,
 		"amount": doc.final_amount,
 	}
 
+	payload_json = json.dumps(payload).encode()
+
+	secret = frappe.conf.get("payment_webhook_secret", "")
+
+	signature = hmac.new(secret.encode(), payload_json, hashlib.sha256).hexdigest()
+
 	try:
-		r = requests.post(settings.webhook_url, json=payload, timeout=5)
+		logger.info(f"Sending webhook for {doc.name}")
+
+		r = requests.post(
+			settings.webhook_url,
+			data=payload_json,
+			headers={"Content-Type": "application/json", "X-Signature": signature},
+			timeout=5,
+		)
 
 		r.raise_for_status()
+
+		# system action, not user-initiated so ignore permission is true
 
 		frappe.get_doc(
 			{
@@ -431,3 +456,72 @@ def send_webhook(job_card_name, retry_count=0):
 				retry_count=retry_count + 1,
 				at_front=False,
 			)
+
+
+@frappe.whitelist(allow_guest=True)
+def payment_webhook():
+	payload = frappe.request.data
+
+	secret = frappe.conf.get("payment_webhook_secret", "")
+
+	signature = frappe.get_request_header("X-Signature")
+
+	expected = hmac.new(secret.encode(), payload, hashlib.sha256).hexdigest()
+
+	if not hmac.compare_digest(expected, signature or ""):
+		frappe.throw("Invalid signature", frappe.AuthenticationError)
+
+	data = json.loads(payload)
+
+	exists = frappe.db.exists("Audit Log", {"action": "payment_received", "document_name": data["ref"]})
+
+	if exists:
+		return {"status": "duplicate", "message": "Already processed"}
+
+	frappe.db.set_value("Job Card", data["ref"], "payment_status", "Paid")
+
+	# ignore_permissions=True is acceptable here because:
+	# This stock deduction is a SYSTEM-INITIATED operation triggered by document submission,
+	# not a direct user action.
+
+	frappe.get_doc(
+		{"doctype": "Audit Log", "action": "payment_received", "document_name": data["ref"]}
+	).insert(ignore_permissions=True)
+
+	return {"status": "ok"}
+
+
+@frappe.whitelist()
+def get_status_chart_data():
+	cache_key = "quickfix_status_chart"
+
+	cached = frappe.cache().get_value(cache_key)
+
+	if cached:
+		return cached
+
+	data = frappe.db.sql(
+		"""
+
+		SELECT
+
+			status,
+
+			COUNT(name) as count
+
+		FROM `tabJob Card`
+
+		GROUP BY status
+
+	""",
+		as_dict=True,
+	)
+
+	result = {
+		"labels": [d.status for d in data],
+		"datasets": [{"name": "Jobs", "values": [d.count for d in data]}],
+	}
+
+	frappe.cache().set_value(cache_key, result, expires_in_sec=300)
+
+	return result

@@ -16,6 +16,10 @@ def log_change(doc, method):
 		return
 
 	try:
+		# ignore_permissions=True is acceptable here because:
+		# This stock deduction is a SYSTEM-INITIATED operation triggered by document submission,
+		# not a direct user action.
+
 		frappe.get_doc(
 			{
 				"doctype": "Audit Log",
